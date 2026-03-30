@@ -1,11 +1,13 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import psycopg2
 import psycopg2.extras
 import os
 import httpx
 from typing import Optional
+from pathlib import Path
 
 app = FastAPI(title="INOVUES SWR Calculator")
 
@@ -126,3 +128,8 @@ async def calculate(
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+@app.get("/", response_class=HTMLResponse)
+def root():
+    html_path = Path(__file__).parent / "index.html"
+    return HTMLResponse(content=html_path.read_text(), status_code=200)

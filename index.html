@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>INOVUES — Energy Savings Estimator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1a7a4a;
+      --green-light: #e8f5ee;
+      --green-mid: #2ea06a;
+      --ink: #0f1a13;
+      --mist: #f2f5f3;
+      --border: #d4ddd7;
+      --text-secondary: #5a6b60;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--mist);
+      color: var(--ink);
+    }
+
+    /* ── LAYOUT ── */
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--green);
+      letter-spacing: -0.3px;
+    }
+
+    .logo span {
+      color: var(--ink);
+      font-style: italic;
+    }
+
+    .tagline-head {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 64px 48px 32px;
+      max-width: 760px;
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.1;
+      color: var(--ink);
+      margin-bottom: 16px;
+    }
+
+    .hero h1 em {
+      color: var(--green);
+      font-style: italic;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 520px;
+    }
+
+    /* ── MAIN ── */
+    main {
+      padding: 0 48px 80px;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 700px;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    /* ── FORM ── */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    label .hint {
+      font-weight: 300;
+      color: var(--text-secondary);
+      margin-left: 6px;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--ink);
+      background: #fff;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(26,122,74,0.1);
+    }
+
+    .select-wrap {
+      position: relative;
+    }
+
+    .select-wrap::after {
+      content: '▾';
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-secondary);
+      pointer-events: none;
+      font-size: 14px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ── BUTTON ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px 32px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      margin-top: 8px;
+    }
+
+    .btn:hover { background: #156040; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { background: #a0b8aa; cursor: not-allowed; }
+
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ERROR ── */
+    .error-box {
+      background: #fff5f5;
+      border: 1px solid #f5c6c6;
+      border-radius: 10px;
+      padding: 16px 20px;
+      font-size: 14px;
+      color: #c0392b;
+      display: none;
+      margin-top: 16px;
+    }
+
+    /* ── RESULTS ── */
+    .results-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 700px;
+      display: none;
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .results-address {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .results-address strong {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .pin { color: var(--green); font-size: 16px; }
+
+    .savings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .saving-tile {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .saving-tile.total {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .tile-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .saving-tile.total .tile-label { color: rgba(255,255,255,0.7); }
+
+    .tile-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 42px;
+      line-height: 1;
+      color: var(--green);
+    }
+
+    .saving-tile.total .tile-value { color: #fff; }
+
+    .tile-unit {
+      font-size: 18px;
+      font-family: 'DM Serif Display', serif;
+    }
+
+    .tile-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 8px;
+    }
+
+    .saving-tile.total .tile-desc { color: rgba(255,255,255,0.65); }
+
+    /* ── BAR CHART ── */
+    .bar-section {
+      margin-top: 8px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .bar-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      width: 90px;
+      flex-shrink: 0;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--green-light);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--green-mid);
+      border-radius: 6px;
+      width: 0%;
+      transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .bar-pct {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--ink);
+      width: 44px;
+      text-align: right;
+    }
+
+    /* ── DISCLAIMER ── */
+    .disclaimer {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 28px;
+    }
+
+    /* ── CTA ── */
+    .cta-row {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .cta-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .cta-text strong { color: var(--ink); }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--green);
+      border: 1.5px solid var(--green);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+
+    .btn-outline:hover { background: var(--green-light); }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      header, main, footer { padding-left: 24px; padding-right: 24px; }
+      .hero { padding: 40px 24px 24px; }
+      .form-row { grid-template-columns: 1fr; }
+      .savings-grid { grid-template-columns: 1fr; }
+      .card, .results-card { padding: 24px; }
+      .cta-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="logo">INOVUES<span>.</span></div>
+    <div class="tagline-head">Energy Savings Estimator</div>
+  </header>
+
+  <div>
+    <div class="hero">
+      <h1>How much energy could your building <em>save?</em></h1>
+      <p>Enter your building's address and a few details. We'll estimate your heating and cooling savings from installing SWR window inserts — based on real energy simulation data.</p>
+    </div>
+
+    <main>
+
+      <div class="card">
+        <div class="card-title">Building Details</div>
+
+        <div class="form-group">
+          <label>Building Address <span class="hint">Full US address</span></label>
+          <input type="text" id="address" placeholder="e.g. 350 5th Ave, New York, NY 10118" autocomplete="off"/>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Building Type</label>
+            <div class="select-wrap">
+              <select id="building_type">
+                <option value="office">Office</option>
+                <option value="hospitality">Hospitality / Hotel</option>
+                <option value="education">Education</option>
+                <option value="multifamily">Multifamily / Residential</option>
+                <option value="hospital">Hospital / Healthcare</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Building Size</label>
+            <div class="select-wrap">
+              <select id="size">
+                <option value="small">Small (&lt; 50,000 sf)</option>
+                <option value="medium" selected>Medium (50k – 200k sf)</option>
+                <option value="large">Large (&gt; 200,000 sf)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Current Window Type</label>
+            <div class="select-wrap">
+              <select id="pane_type">
+                <option value="single">Single Pane</option>
+                <option value="double">Double Pane</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Window-to-Wall Ratio <span class="hint">Approx % of facade that is glass</span></label>
+            <div class="select-wrap">
+              <select id="wwr">
+                <option value="0.30">30%</option>
+                <option value="0.40" selected>40%</option>
+                <option value="0.50">50%</option>
+                <option value="0.60">60%</option>
+                <option value="0.70">70%</option>
+                <option value="0.80">80%</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn" id="calcBtn" onclick="calculate()">
+          <span id="btnText">Calculate Savings</span>
+          <span class="spinner" id="spinner"></span>
+        </button>
+
+        <div class="error-box" id="errorBox"></div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="results-card" id="results">
+        <div class="card-title">Estimated Energy Savings</div>
+
+        <div class="results-address" id="addressDisplay">
+          <span class="pin">📍</span>
+          <span><strong id="matchedAddress"></strong></span>
+        </div>
+
+        <div class="savings-grid">
+          <div class="saving-tile">
+            <div class="tile-label">Heating</div>
+            <div class="tile-value"><span id="heatPct">—</span><span class="tile-unit">%</span></div>
+            <div class="tile-desc">reduction in heating energy</div>
+          </div>
+          <div class="saving-tile">
+            <div class="tile-label">Cooling</div>
+            <div class="tile-value"><span id="coolPct">—</span><span class="tile-unit">%</span></div>
+            <div class="tile-desc">reduction in cooling energy</div>
+          </div>
+          <div class="saving-tile total">
+            <div class="tile-label">Total</div>
+            <div class="tile-value"><span id="totalPct">—</span><span class="tile-unit">%</span></div>
+            <div class="tile-desc">combined HVAC savings</div>
+          </div>
+        </div>
+
+        <div class="bar-section">
+          <div class="bar-row">
+            <div class="bar-label">Heating</div>
+            <div class="bar-track"><div class="bar-fill" id="heatBar"></div></div>
+            <div class="bar-pct" id="heatBarPct"></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Cooling</div>
+            <div class="bar-track"><div class="bar-fill" id="coolBar"></div></div>
+            <div class="bar-pct" id="coolBarPct"></div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Total</div>
+            <div class="bar-track"><div class="bar-fill" id="totalBar" style="background: var(--green);"></div></div>
+            <div class="bar-pct" id="totalBarPct"></div>
+          </div>
+        </div>
+
+        <div class="cta-row">
+          <div class="cta-text"><strong>Want a detailed energy analysis for your building?</strong><br>Our team can provide a full assessment with projected cost savings.</div>
+          <a class="btn-outline" href="https://www.inovues.com/contact" target="_blank">Get a Free Assessment →</a>
+        </div>
+
+        <div class="disclaimer">
+          * Estimates are based on EnergyPlus simulations for your climate zone and building type. Actual savings will vary based on building envelope, mechanical systems, occupancy, and utility rates. Dollar savings will be added once utility data is provided.
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <footer>
+    <span>© 2026 INOVUES Inc. — Window Retrofit Solutions</span>
+    <span>Estimates based on DOE EnergyPlus climate simulations</span>
+  </footer>
+
+</div>
+
+<script>
+  const API = 'https://web-production-86899.up.railway.app';
+
+  async function calculate() {
+    const address = document.getElementById('address').value.trim();
+    if (!address) {
+      showError('Please enter a building address.');
+      return;
+    }
+
+    const btn = document.getElementById('calcBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+    const errorBox = document.getElementById('errorBox');
+    const results = document.getElementById('results');
+
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Calculating…';
+    errorBox.style.display = 'none';
+    results.style.display = 'none';
+
+    const params = new URLSearchParams({
+      address,
+      building_type: document.getElementById('building_type').value,
+      size: document.getElementById('size').value,
+      pane_type: document.getElementById('pane_type').value,
+      wwr: document.getElementById('wwr').value,
+    });
+
+    try {
+      const resp = await fetch(`${API}/calculate?${params}`);
+      const data = await resp.json();
+
+      if (!resp.ok) {
+        showError(data.detail || 'Could not retrieve data for this address. Please check the address and try again.');
+        return;
+      }
+
+      // Populate results
+      document.getElementById('matchedAddress').textContent = data.matched_address;
+      document.getElementById('heatPct').textContent  = Math.round(data.savings_heating_pct);
+      document.getElementById('coolPct').textContent  = Math.round(data.savings_cooling_pct);
+      document.getElementById('totalPct').textContent = Math.round(data.savings_total_pct);
+
+      results.style.display = 'block';
+
+      // Animate bars after paint
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          setBar('heatBar',  'heatBarPct',  data.savings_heating_pct);
+          setBar('coolBar',  'coolBarPct',  data.savings_cooling_pct);
+          setBar('totalBar', 'totalBarPct', data.savings_total_pct);
+        }, 60);
+      });
+
+    } catch (e) {
+      showError('Network error — please try again.');
+    } finally {
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      btnText.textContent = 'Calculate Savings';
+    }
+  }
+
+  function setBar(barId, pctId, value) {
+    const pct = Math.min(Math.round(value), 100);
+    document.getElementById(barId).style.width = pct + '%';
+    document.getElementById(pctId).textContent = pct + '%';
+  }
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.style.display = 'block';
+  }
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') calculate();
+  });
+</script>
+</body>
+</html>
