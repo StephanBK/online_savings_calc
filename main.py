@@ -188,6 +188,22 @@ async def calculate(
 def health():
     return {"status": "ok"}
 
+@app.get("/debug")
+def debug():
+    import os
+    base = os.path.dirname(os.path.abspath(__file__))
+    result = {
+        "abspath": base,
+        "cwd": os.getcwd(),
+        "files_in_base": os.listdir(base),
+    }
+    static = os.path.join(base, "static")
+    if os.path.exists(static):
+        result["files_in_static"] = os.listdir(static)
+    else:
+        result["static_exists"] = False
+    return result
+
 @app.get("/", response_class=HTMLResponse)
 def root():
     import os
