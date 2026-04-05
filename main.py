@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 import psycopg2
@@ -152,5 +151,23 @@ async def calculate(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
 
-# Mount static files — serves index.html at /
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+@app.get("/", response_class=HTMLResponse)
+def root():
+    import os
+    # Log what we can see for debugging
+    cwd = os.getcwd()
+    app_files = os.listdir(cwd)
+    static_path = os.path.join(cwd, "static", "index.html")
+    if os.path.exists(static_path):
+        with open(static_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    # Fallback: try relative to this file
+    here = os.path.dirname(os.path.abspath(__file__))
+    alt_path = os.path.join(here, "static", "index.html")
+    if os.path.exists(alt_path):
+        with open(alt_path, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse(
+        content=f"<pre>cwd={cwd}\nfiles={app_files}\nstatic_path={static_path}\nhere={here}</pre>",
+        status_code=200
+    )
