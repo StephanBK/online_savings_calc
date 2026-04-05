@@ -190,14 +190,9 @@ def health():
 
 @app.get("/", response_class=HTMLResponse)
 def root():
-    # Try multiple path strategies for Railway compatibility
-    candidates = [
-        Path(__file__).parent / "static" / "index.html",
-        Path("/app/static/index.html"),
-        Path("static/index.html"),
-    ]
-    for p in candidates:
-        if p.exists():
-            return HTMLResponse(content=p.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>Calculator not found</h1><p>Looked in: " + 
-        ", ".join(str(p) for p in candidates) + "</p>", status_code=500)
+    import os
+    # Use directory of this file — reliable on Railway
+    base = os.path.dirname(os.path.abspath(__file__))
+    html_path = os.path.join(base, "static", "index.html")
+    with open(html_path, "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
