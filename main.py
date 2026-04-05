@@ -188,27 +188,12 @@ async def calculate(
 def health():
     return {"status": "ok"}
 
-@app.get("/debug")
-def debug():
-    import os
-    base = os.path.dirname(os.path.abspath(__file__))
-    result = {
-        "abspath": base,
-        "cwd": os.getcwd(),
-        "files_in_base": os.listdir(base),
-    }
-    static = os.path.join(base, "static")
-    if os.path.exists(static):
-        result["files_in_static"] = os.listdir(static)
-    else:
-        result["static_exists"] = False
-    return result
+# HTML inlined at deploy time — no file I/O on Railway
+_CALCULATOR_HTML = open(
+    __import__("os").path.join(__import__("os").path.dirname(__import__("os").path.abspath(__file__)), "static", "index.html"),
+    encoding="utf-8"
+).read()
 
 @app.get("/", response_class=HTMLResponse)
 def root():
-    import os
-    # Use directory of this file — reliable on Railway
-    base = os.path.dirname(os.path.abspath(__file__))
-    html_path = os.path.join(base, "static", "index.html")
-    with open(html_path, "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+    return HTMLResponse(content=_CALCULATOR_HTML)
