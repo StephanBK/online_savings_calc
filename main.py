@@ -18,6 +18,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Allow iframe embedding from Odoo
+from fastapi import Request
+from fastapi.responses import Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class IframeMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        # Remove X-Frame-Options so Odoo can embed via iframe
+        response.headers.pop("x-frame-options", None)
+        # Allow embedding from any origin (scope to odoo domain if needed)
+        response.headers["Content-Security-Policy"] = "frame-ancestors *"
+        return response
+
+app.add_middleware(IframeMiddleware)
+
 DATABASE_URL = os.environ["DATABASE_URL"]
 
 def get_db():
@@ -175,4 +191,4 @@ def health():
 @app.get("/", response_class=HTMLResponse)
 def root():
     html_path = Path(__file__).parent / "static" / "index.html"
-    return HTMLResponse(content=html_path.read_text())
+    return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
